@@ -30,7 +30,12 @@ def _drive_service():
     # Uses the VM's own attached service account via Application Default
     # Credentials -- no key file. The Drive folder must be shared with that
     # service account's email (see 01_setup_infra.sh output).
-    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/drive.file"])
+    #
+    # Needs the full "drive" scope, not "drive.file" -- drive.file only
+    # grants access to files the service account itself created, not an
+    # existing folder someone else shared with it after the fact, which is
+    # exactly our setup here.
+    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/drive"])
     return build("drive", "v3", credentials=creds)
 
 
