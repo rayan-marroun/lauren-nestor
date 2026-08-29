@@ -17,6 +17,16 @@ sudo useradd -r -m -d /opt/lauren -s /usr/sbin/nologin lauren || true
 sudo mkdir -p /opt/lauren/workspace
 sudo chown -R lauren:lauren /opt/lauren
 
+# gcloud on this image is a snap package, and snap's sandboxing refuses to
+# run at all unless the invoking user's $HOME is under /home ("home
+# directories outside of /home needs configuration"). All our own paths
+# are absolute (/opt/lauren/...) and don't depend on $HOME, so this only
+# gives her a second, minimal home dir purely to satisfy snap -- nothing
+# about where her actual files live changes.
+sudo mkdir -p /home/lauren
+sudo chown lauren:lauren /home/lauren
+sudo usermod -d /home/lauren lauren
+
 # --- Python env ---
 cd /opt/lauren
 sudo -u lauren python3 -m venv venv
