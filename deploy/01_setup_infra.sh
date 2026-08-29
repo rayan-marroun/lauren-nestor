@@ -34,6 +34,12 @@ gcloud services enable \
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
+echo "== Firewall rule so the dashboard is reachable via IAP tunnel (private, not public) =="
+gcloud compute firewall-rules create allow-iap-dashboard \
+  --direction=INGRESS --action=allow --rules=tcp:8080 \
+  --source-ranges=35.235.240.0/20 --network=default --quiet || \
+  echo "(already exists, skipping)"
+
 echo "== Firestore (for the approval service's state) =="
 gcloud firestore databases create --location="$REGION" --type=firestore-native || \
   echo "(already exists, skipping)"

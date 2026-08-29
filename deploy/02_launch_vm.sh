@@ -49,8 +49,14 @@ for i in $(seq 1 20); do
   sleep 15
 done
 
+echo "== Packaging a clean copy (excluding .git -- its pack files are read-only and break re-syncs over scp) =="
+rm -rf /tmp/lauren-deploy
+mkdir -p /tmp/lauren-deploy
+git archive HEAD | tar -x -C /tmp/lauren-deploy
+cp .env /tmp/lauren-deploy/.env
+
 echo "== Copying the project (incl. .env) to the VM =="
-gcloud compute scp --recurse . "${VM_NAME}:~/lauren-nestor" --zone="$ZONE" --tunnel-through-iap
+(cd /tmp/lauren-deploy && gcloud compute scp --recurse . "${VM_NAME}:~/lauren-nestor" --zone="$ZONE" --tunnel-through-iap)
 
 echo "== Installing + starting Lauren on the VM =="
 gcloud compute ssh "$VM_NAME" --zone="$ZONE" --tunnel-through-iap --command="

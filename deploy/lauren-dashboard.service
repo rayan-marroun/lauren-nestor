@@ -1,0 +1,14 @@
+[Unit]
+Description=Lauren Nestor dashboard
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lauren/deploy/dashboard
+ExecStart=/opt/lauren/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=15
+User=lauren
+
+[Install]
+WantedBy=multi-user.target

@@ -22,10 +22,13 @@ cd /opt/lauren
 sudo -u lauren python3 -m venv venv
 sudo -u lauren ./venv/bin/pip install -r requirements.txt
 
-# --- systemd service ---
+# --- systemd services ---
 sudo cp deploy/lauren.service /etc/systemd/system/lauren.service
+sudo cp deploy/lauren-dashboard.service /etc/systemd/system/lauren-dashboard.service
 sudo systemctl daemon-reload
-sudo systemctl enable --now lauren
+sudo systemctl enable lauren lauren-dashboard
+sudo systemctl restart lauren lauren-dashboard
 
 echo "Lauren is up. Follow logs with: journalctl -u lauren -f"
 echo "Or: tail -f /opt/lauren/experiment_log.txt"
+echo "Dashboard listening on port 8080 (see deploy/dashboard for how to view it)"

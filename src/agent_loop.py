@@ -14,6 +14,7 @@ from tools.drive_log import log_lesson
 
 STATE_PATH = "/opt/lauren/state.json"
 LOG_PATH = "/opt/lauren/experiment_log.txt"
+STATUS_PATH = "/opt/lauren/status.json"
 SYSTEM_PROMPT_PATH = "/opt/lauren/system_prompt.md"
 
 MAX_TOOL_CALLS_PER_TURN = 6
@@ -24,6 +25,19 @@ def log(line: str) -> None:
     with open(LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"[{stamp}] {line}\n")
     print(f"[{stamp}] {line}", flush=True)
+
+
+def write_status(budget: BudgetGuard) -> None:
+    status = {
+        "spent_eur": budget.estimated_spend_eur(),
+        "cap_eur": budget.cap_eur,
+        "elapsed_hours": budget.elapsed_hours(),
+        "updated_at": datetime.datetime.utcnow().isoformat(),
+    }
+    tmp = STATUS_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(status, f)
+    os.replace(tmp, STATUS_PATH)
 
 
 def load_state() -> list:
@@ -50,6 +64,7 @@ def run() -> None:
     log(f"Lauren starting up. {budget.status_line()}")
 
     while True:
+        write_status(budget)
         try:
             budget.check()
         except BudgetExceeded as exc:
