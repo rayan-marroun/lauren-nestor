@@ -189,6 +189,26 @@ const barFill = document.getElementById('barFill');
 const sidebarBody = document.getElementById('sidebarBody');
 const KIND_LABEL = {lauren: 'Lauren', tool_call: 'Tool call', tool_result: 'Tool result', system: 'System'};
 const COLLAPSE_THRESHOLD = 600;
+const DISPLAY_OFFSET_HOURS = 2; // server logs in UTC; shown here as UTC+2
+
+function parseAsUTC(ts) {
+  let iso = ts;
+  if (iso.endsWith(' UTC')) {
+    iso = iso.slice(0, -4).replace(' ', 'T') + 'Z';
+  } else if (!iso.endsWith('Z')) {
+    iso = iso + 'Z';
+  }
+  return new Date(iso);
+}
+
+function toDisplayTime(ts) {
+  const d = parseAsUTC(ts);
+  if (isNaN(d)) return ts;
+  const shifted = new Date(d.getTime() + DISPLAY_OFFSET_HOURS * 3600 * 1000);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())} ` +
+         `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())} (UTC+2)`;
+}
 
 function render(entry) {
   const wrap = document.createElement('div');
@@ -201,7 +221,7 @@ function render(entry) {
   kind.textContent = KIND_LABEL[entry.kind] || entry.kind;
   const ts = document.createElement('span');
   ts.className = 'ts';
-  ts.textContent = entry.ts;
+  ts.textContent = toDisplayTime(entry.ts);
   head.appendChild(kind);
   head.appendChild(ts);
 
@@ -267,7 +287,7 @@ async function pollStatus() {
       if (s.status_updated_at) {
         const stamp = document.createElement('div');
         stamp.className = 'stamp';
-        stamp.textContent = s.status_updated_at.replace('T', ' ').split('.')[0] + ' UTC';
+        stamp.textContent = toDisplayTime(s.status_updated_at);
         sidebarBody.appendChild(stamp);
       }
     }
