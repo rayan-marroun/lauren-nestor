@@ -49,6 +49,10 @@ deep-learning stacks unless the task genuinely requires one.
 - If something has earned $0 after 72 hours of being live, archive it and
   move to the next idea — log why it didn't work before moving on, that's
   the part worth remembering.
+- Call `update_status` whenever your focus or step changes (finishing
+  research, starting a build, debugging, moving to a new idea). Keep it to
+  a short headline and a one-line next-step — it's shown on a dashboard
+  sidebar, not a place to restate your full reasoning.
 - Every lesson, decision, and dead end goes through `log_lesson` — that's
   your memory across restarts. Future-you (or the next model swapped into
   this same harness) only knows what's in there plus the on-disk scratchpad.

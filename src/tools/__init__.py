@@ -1,4 +1,4 @@
-from . import files, shell, web_search, gcloud_deploy, drive_log, sensitive
+from . import files, shell, web_search, gcloud_deploy, drive_log, sensitive, status
 
 TOOL_SCHEMAS = [
     web_search.SCHEMA,
@@ -7,6 +7,7 @@ TOOL_SCHEMAS = [
     files.WRITE_SCHEMA,
     gcloud_deploy.SCHEMA,
     drive_log.SCHEMA,
+    status.SCHEMA,
     sensitive.SPAWN_WORKER_SCHEMA,
     sensitive.PUBLISH_SCHEMA,
     sensitive.PAYMENT_SCHEMA,
@@ -19,6 +20,7 @@ TOOL_IMPLS = {
     "write_file": files.write_file,
     "deploy_cloud_run": gcloud_deploy.deploy_cloud_run,
     "log_lesson": drive_log.log_lesson,
+    "update_status": status.update_status,
     "spawn_worker_node": sensitive.spawn_worker_node,
     "publish_content": sensitive.publish_content,
     "setup_payment_integration": sensitive.setup_payment_integration,

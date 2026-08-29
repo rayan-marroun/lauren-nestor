@@ -108,7 +108,28 @@ HTML_PAGE = """<!doctype html>
   .budget .bar { width: 140px; height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
   .budget .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.6s ease; width: 0%; }
 
-  #feed { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; }
+  .layout {
+    max-width: 1020px; margin: 0 auto; padding: 24px 20px 80px;
+    display: grid; grid-template-columns: 1fr 260px; gap: 20px; align-items: start;
+  }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+  }
+
+  .sidebar {
+    position: sticky; top: 70px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+    padding: 14px;
+  }
+  .sidebar .label {
+    font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .sidebar .headline { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+  .sidebar .detail { font-size: 12.5px; color: var(--text-dim); line-height: 1.45; }
+  .sidebar .placeholder { font-size: 12.5px; color: var(--text-faint); font-style: italic; }
+  .sidebar .stamp { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 10px; }
 
   .entry { margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
   .entry-head {
@@ -153,12 +174,19 @@ HTML_PAGE = """<!doctype html>
     <div class="bar"><div class="bar-fill" id="barFill"></div></div>
   </div>
 </header>
-<div id="feed"></div>
+<div class="layout">
+  <div id="feed"></div>
+  <aside class="sidebar">
+    <div class="label">Currently</div>
+    <div id="sidebarBody"><span class="placeholder">No status set yet</span></div>
+  </aside>
+</div>
 <script>
 let since = 0;
 const feed = document.getElementById('feed');
 const figures = document.getElementById('figures');
 const barFill = document.getElementById('barFill');
+const sidebarBody = document.getElementById('sidebarBody');
 const KIND_LABEL = {lauren: 'Lauren', tool_call: 'Tool call', tool_result: 'Tool result', system: 'System'};
 const COLLAPSE_THRESHOLD = 600;
 
@@ -225,6 +253,23 @@ async function pollStatus() {
       figures.appendChild(sep);
       const pct = Math.min(100, (s.spent_eur / s.cap_eur) * 100);
       barFill.style.width = pct + '%';
+    }
+    if (s.headline) {
+      sidebarBody.innerHTML = '';
+      const headline = document.createElement('div');
+      headline.className = 'headline';
+      headline.textContent = s.headline;
+      const detail = document.createElement('div');
+      detail.className = 'detail';
+      detail.textContent = s.detail || '';
+      sidebarBody.appendChild(headline);
+      sidebarBody.appendChild(detail);
+      if (s.status_updated_at) {
+        const stamp = document.createElement('div');
+        stamp.className = 'stamp';
+        stamp.textContent = s.status_updated_at.replace('T', ' ').split('.')[0] + ' UTC';
+        sidebarBody.appendChild(stamp);
+      }
     }
   } catch (e) {}
 }

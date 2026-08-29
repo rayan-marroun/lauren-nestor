@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 
 load_dotenv("/opt/lauren/.env")
 
-from llm_client import get_client, get_model
+from llm_client import LLMRouter
 from budget_guard import BudgetGuard, BudgetExceeded
 from tools import TOOL_SCHEMAS, call_tool
 from tools.drive_log import log_lesson
+from status_store import read_status, write_status
 
 STATE_PATH = "/opt/lauren/state.json"
 LOG_PATH = "/opt/lauren/experiment_log.txt"
-STATUS_PATH = "/opt/lauren/status.json"
 SYSTEM_PROMPT_PATH = "/opt/lauren/system_prompt.md"
 
 MAX_TOOL_CALLS_PER_TURN = 6
@@ -27,17 +27,18 @@ def log(line: str) -> None:
     print(f"[{stamp}] {line}", flush=True)
 
 
-def write_status(budget: BudgetGuard) -> None:
-    status = {
+def write_budget_status(budget: BudgetGuard) -> None:
+    # Merge rather than overwrite -- update_status() (see tools/status.py)
+    # writes headline/detail into this same file, and a blind overwrite here
+    # would silently wipe that out every iteration.
+    status = read_status()
+    status.update({
         "spent_eur": budget.estimated_spend_eur(),
         "cap_eur": budget.cap_eur,
         "elapsed_hours": budget.elapsed_hours(),
         "updated_at": datetime.datetime.utcnow().isoformat(),
-    }
-    tmp = STATUS_PATH + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(status, f)
-    os.replace(tmp, STATUS_PATH)
+    })
+    write_status(status)
 
 
 def load_state() -> list:
@@ -62,15 +63,15 @@ def save_state(messages: list) -> None:
 
 def run() -> None:
     os.makedirs("/opt/lauren/workspace", exist_ok=True)
-    client = get_client()
-    model = get_model()
+    router = LLMRouter()
     budget = BudgetGuard()
     messages = load_state()
+    last_model_used = None
 
     log(f"Lauren starting up. {budget.status_line()}")
 
     while True:
-        write_status(budget)
+        write_budget_status(budget)
         try:
             budget.check()
         except BudgetExceeded as exc:
@@ -78,12 +79,18 @@ def run() -> None:
             log_lesson(f"Session ended: {exc}")
             break
 
-        response = client.chat.completions.create(
-            model=model,
+        response, model_used = router.create(
             messages=messages,
             tools=TOOL_SCHEMAS,
             tool_choice="auto",
         )
+        if model_used != last_model_used:
+            if last_model_used is None:
+                log(f"Using {model_used}")
+            else:
+                log(f"Switched provider: {last_model_used} -> {model_used}")
+            last_model_used = model_used
+
         choice = response.choices[0]
         msg = choice.message
         messages.append(msg.model_dump(exclude_none=True))
