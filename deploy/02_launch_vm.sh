@@ -6,8 +6,8 @@
 set -euo pipefail
 
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
-ZONE="us-central1-a"
 VM_NAME="lauren-nestor-vm"
+DEFAULT_ZONE="us-central1-a"
 
 if [ -z "$PROJECT_ID" ]; then
   echo "No active project set. Run: gcloud config set project YOUR_PROJECT_ID"
@@ -23,18 +23,26 @@ if [ ! -f gdrive-service-account.json ]; then
   exit 1
 fi
 
-echo "== Creating the VM (spot instance) =="
-gcloud compute instances create "$VM_NAME" \
-  --project="$PROJECT_ID" \
-  --zone="$ZONE" \
-  --machine-type=n2-standard-8 \
-  --image-family=ubuntu-2204-lts \
-  --image-project=ubuntu-os-cloud \
-  --boot-disk-size=100GB \
-  --boot-disk-type=pd-balanced \
-  --provisioning-model=SPOT \
-  --instance-termination-action=STOP \
-  --scopes=cloud-platform
+EXISTING_ZONE=$(gcloud compute instances list --filter="name=${VM_NAME}" --format='value(zone.basename())' 2>/dev/null || true)
+
+if [ -n "$EXISTING_ZONE" ]; then
+  ZONE="$EXISTING_ZONE"
+  echo "== Found existing instance '$VM_NAME' in zone $ZONE, skipping creation =="
+else
+  ZONE="$DEFAULT_ZONE"
+  echo "== Creating the VM (spot instance) in $ZONE =="
+  gcloud compute instances create "$VM_NAME" \
+    --project="$PROJECT_ID" \
+    --zone="$ZONE" \
+    --machine-type=n2-standard-8 \
+    --image-family=ubuntu-2204-lts \
+    --image-project=ubuntu-os-cloud \
+    --boot-disk-size=100GB \
+    --boot-disk-type=pd-balanced \
+    --provisioning-model=SPOT \
+    --instance-termination-action=STOP \
+    --scopes=cloud-platform
+fi
 
 echo "== Waiting for SSH to come up =="
 for i in $(seq 1 20); do
