@@ -17,7 +17,7 @@ class LLMRouter:
         # actually wrong (bad key, network issue), so fail fast and fall
         # through rather than block the whole loop waiting on it.
         self._groq_client = (
-            OpenAI(base_url="https://api.groq.com/openai/v1", api_key=groq_key, timeout=30.0, max_retries=1)
+            OpenAI(base_url="https://api.groq.com/openai/v1", api_key=groq_key, timeout=15.0, max_retries=1)
             if groq_key else None
         )
         self._groq_primary = os.environ.get("GROQ_MODEL_PRIMARY", "openai/gpt-oss-120b")
