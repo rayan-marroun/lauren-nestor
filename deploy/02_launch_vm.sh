@@ -18,10 +18,6 @@ if [ ! -f .env ]; then
   echo "No .env found. Run: cp .env.example .env && nano .env -- fill it in first."
   exit 1
 fi
-if [ ! -f gdrive-service-account.json ]; then
-  echo "gdrive-service-account.json missing -- did 01_setup_infra.sh run?"
-  exit 1
-fi
 
 EXISTING_ZONE=$(gcloud compute instances list --filter="name=${VM_NAME}" --format='value(zone.basename())' 2>/dev/null || true)
 
@@ -53,7 +49,7 @@ for i in $(seq 1 20); do
   sleep 15
 done
 
-echo "== Copying the project (incl. .env and the Drive key) to the VM =="
+echo "== Copying the project (incl. .env) to the VM =="
 gcloud compute scp --recurse . "${VM_NAME}:~/lauren-nestor" --zone="$ZONE" --tunnel-through-iap
 
 echo "== Installing + starting Lauren on the VM =="

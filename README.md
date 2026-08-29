@@ -77,9 +77,10 @@ spot capacity, the VM just stops (state preserved) instead of being deleted —
 you restart it and Lauren picks up where she left off, since the loop's
 scratchpad is persisted to disk.
 
-## What's NOT built yet (next steps once you've picked a Gmail identity)
+## Note on the Drive folder
 
-- `deploy/approval_service/` (FastAPI + Firestore, Cloud Run)
-- `deploy/budget_alert_function/` (Cloud Function)
-- The actual GCP Budget + alert wiring (needs your confirmation before I
-  touch billing config)
+Lauren authenticates to Drive as the VM's own service account (no exported
+key file — your org's security policy blocks those anyway, and ADC is
+cleaner regardless). Share your knowledge-base folder with whatever
+`deploy/01_setup_infra.sh` prints as the "VM's service account", not a
+separately-created identity.

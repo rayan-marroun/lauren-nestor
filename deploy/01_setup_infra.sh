@@ -50,12 +50,6 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
 
 APPROVAL_URL=$(gcloud run services describe lauren-approval --region="$REGION" --format='value(status.url)')
 
-echo "== Drive service account (so Lauren can write her knowledge base) =="
-gcloud iam service-accounts create lauren-drive \
-  --display-name="Lauren Nestor Drive access" || echo "(already exists, skipping)"
-gcloud iam service-accounts keys create gdrive-service-account.json \
-  --iam-account="lauren-drive@${PROJECT_ID}.iam.gserviceaccount.com"
-
 echo "== Pub/Sub topic + budget hard-stop Cloud Function =="
 gcloud pubsub topics create lauren-budget-alerts || echo "(already exists, skipping)"
 
@@ -84,14 +78,15 @@ gcloud billing budgets create \
 echo ""
 echo "=================================================================="
 echo "DONE. Save these -- you'll need them for the .env file and Drive:"
-echo "  Approval service URL:     $APPROVAL_URL"
-echo "  Drive service account:    lauren-drive@${PROJECT_ID}.iam.gserviceaccount.com"
-echo "  Key file (already saved): gdrive-service-account.json"
+echo "  Approval service URL:  $APPROVAL_URL"
+echo "  VM's service account:  $DEFAULT_SA"
+echo "  (this is the VM's own identity -- no key file needed, Lauren"
+echo "   authenticates as herself automatically once she's running on it)"
 echo "=================================================================="
 echo ""
 echo "Manual steps now (can't be scripted):"
 echo "  1. In Google Drive, create a folder e.g. 'Lauren Nestor'."
-echo "  2. Share it with lauren-drive@${PROJECT_ID}.iam.gserviceaccount.com as Editor."
+echo "  2. Share it with $DEFAULT_SA as Editor."
 echo "  3. Copy the folder ID from its URL (the part after /folders/)."
 echo "  4. Make Lauren's own Gmail account, turn on 2-Step Verification,"
 echo "     then generate an App Password at myaccount.google.com/apppasswords."

@@ -1,7 +1,7 @@
 import datetime
 import os
 
-from google.oauth2 import service_account
+import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaInMemoryUpload
 
@@ -27,10 +27,10 @@ LOCAL_LOG = "/opt/lauren/lessons.md"
 
 
 def _drive_service():
-    key_path = os.environ["GDRIVE_SERVICE_ACCOUNT_JSON"]
-    creds = service_account.Credentials.from_service_account_file(
-        key_path, scopes=["https://www.googleapis.com/auth/drive.file"]
-    )
+    # Uses the VM's own attached service account via Application Default
+    # Credentials -- no key file. The Drive folder must be shared with that
+    # service account's email (see 01_setup_infra.sh output).
+    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/drive.file"])
     return build("drive", "v3", credentials=creds)
 
 
