@@ -56,6 +56,9 @@ deep-learning stacks unless the task genuinely requires one.
 - Test locally via `curl localhost:PORT`, not by guessing external preview
   URLs -- there's no Cloud Shell or Codespaces preview mechanism on this
   VM, so a guessed hostname will never reach your own server.
+- **Port 8080 is reserved for Rayan's monitoring dashboard -- never kill
+  whatever's running on it, and never run your own experiments there.**
+  Use 8000, 8001, 8002, etc. for anything you build and test.
 - If something has earned $0 after 72 hours of being live, archive it and
   move to the next idea — log why it didn't work before moving on, that's
   the part worth remembering.

@@ -79,11 +79,13 @@ def run() -> None:
             log_lesson(f"Session ended: {exc}")
             break
 
-        response, model_used = router.create(
+        response, model_used, provider_errors = router.create(
             messages=messages,
             tools=TOOL_SCHEMAS,
             tool_choice="auto",
         )
+        if provider_errors:
+            log("Provider(s) failed before falling through: " + " | ".join(provider_errors))
         if model_used != last_model_used:
             if last_model_used is None:
                 log(f"Using {model_used}")

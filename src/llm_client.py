@@ -34,19 +34,22 @@ class LLMRouter:
         self._ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5:14b")
 
     def create(self, **kwargs):
+        """Returns (response, model_used, errors) -- errors covers any
+        providers tried and skipped before the one that succeeded, so the
+        caller can log *why* a fallback happened, not just that it did."""
         errors = []
 
         if self._groq_client is not None:
             for model in (self._groq_primary, self._groq_fallback):
                 try:
                     response = self._groq_client.chat.completions.create(model=model, **kwargs)
-                    return response, model
+                    return response, model, errors
                 except Exception as exc:  # noqa: BLE001 -- any failure just tries the next provider
                     errors.append(f"{model}: {exc}")
 
         try:
             response = self._ollama_client.chat.completions.create(model=self._ollama_model, **kwargs)
-            return response, self._ollama_model
+            return response, self._ollama_model, errors
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{self._ollama_model}: {exc}")
             raise RuntimeError("All providers failed: " + " | ".join(errors)) from exc
