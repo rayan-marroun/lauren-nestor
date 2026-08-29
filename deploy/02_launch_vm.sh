@@ -5,9 +5,14 @@
 # Creates the VM, ships the code + secrets to it, and starts Lauren.
 set -euo pipefail
 
-PROJECT_ID="lauren-nestor"
+PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
 ZONE="us-central1-a"
 VM_NAME="lauren-nestor-vm"
+
+if [ -z "$PROJECT_ID" ]; then
+  echo "No active project set. Run: gcloud config set project YOUR_PROJECT_ID"
+  exit 1
+fi
 
 if [ ! -f .env ]; then
   echo "No .env found. Run: cp .env.example .env && nano .env -- fill it in first."

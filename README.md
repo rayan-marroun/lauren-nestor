@@ -60,9 +60,8 @@ the model's judgment:
 
 ```bash
 gcloud compute instances create lauren-nestor-vm \
-  --project=lauren-nestor \
   --zone=us-central1-a \
-  --machine-type=c2-standard-8 \
+  --machine-type=n2-standard-8 \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud \
   --boot-disk-size=100GB \

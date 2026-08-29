@@ -6,11 +6,15 @@
 # service, the Drive service account, and the budget hard-stop.
 set -euo pipefail
 
-PROJECT_ID="lauren-nestor"
+PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
 REGION="us-central1"
 BUDGET_EUR="235"
 
-gcloud config set project "$PROJECT_ID"
+if [ -z "$PROJECT_ID" ]; then
+  echo "No active project set. Run: gcloud config set project YOUR_PROJECT_ID"
+  exit 1
+fi
+echo "Using project: $PROJECT_ID"
 
 echo "== Enabling APIs =="
 gcloud services enable \
