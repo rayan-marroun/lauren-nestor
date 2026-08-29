@@ -36,6 +36,10 @@ def shell_exec(command: str, timeout_seconds: int = 120) -> str:
         )
     except subprocess.TimeoutExpired:
         return f"error: command timed out after {timeout_seconds}s"
-    out = proc.stdout[-4000:]
-    err = proc.stderr[-2000:]
+    # Kept fairly tight -- this goes straight into her conversation history
+    # (not just the dashboard display), and things like pip install spam
+    # were routinely pushing a single call's input tokens past 7000, eating
+    # most of Groq's free-tier per-minute budget in one request.
+    out = proc.stdout[-1500:]
+    err = proc.stderr[-800:]
     return f"exit={proc.returncode}\nstdout:\n{out}\nstderr:\n{err}"

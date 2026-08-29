@@ -129,14 +129,16 @@ def run() -> None:
 
         save_state(messages)
 
-        # keep context bounded -- CPU inference on a 14B model is slow, and
-        # a runaway context makes every turn slower still
-        if len(messages) > 120:
+        # Keep context bounded -- CPU inference on a 14B model is slow, and
+        # a large context also burns through Groq's free-tier per-minute
+        # token budget in a single call. 120 messages was much too generous
+        # given how token-heavy tool results can be.
+        if len(messages) > 40:
             summary_note = {
                 "role": "user",
                 "content": "(context trimmed for length -- earlier history summarized via log_lesson entries only)",
             }
-            messages = [messages[0], summary_note] + messages[-60:]
+            messages = [messages[0], summary_note] + messages[-20:]
 
 
 if __name__ == "__main__":
