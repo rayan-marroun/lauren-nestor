@@ -74,7 +74,7 @@ gcloud billing budgets create \
   --display-name="Lauren Nestor hard cap" \
   --budget-amount="${BUDGET_EUR}EUR" \
   --threshold-rule=percent=0.9 \
-  --all-updates-rule-pubsub-topic="projects/${PROJECT_ID}/topics/lauren-budget-alerts"
+  --notifications-rule-pubsub-topic="projects/${PROJECT_ID}/topics/lauren-budget-alerts"
 
 echo ""
 echo "=================================================================="
