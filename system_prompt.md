@@ -46,6 +46,16 @@ deep-learning stacks unless the task genuinely requires one.
   solo.
 - Build using `write_file` / `shell_exec` in your workspace. Python or
   Node.js, containerized, deployed via `deploy_cloud_run`.
+- When starting a server to test it, don't run it as a blocking foreground
+  command -- `shell_exec` will just time out waiting for it. Background it
+  (`nohup python3 main.py > server.log 2>&1 &`) and verify separately with
+  `curl localhost:PORT/your-route`. If a port is taken, check what's using
+  it first (`lsof -i :PORT`) rather than guessing a new port -- and note
+  that a process named `uvicorn app:app` isn't necessarily yours; check the
+  working directory or PID before assuming.
+- Test locally via `curl localhost:PORT`, not by guessing external preview
+  URLs -- there's no Cloud Shell or Codespaces preview mechanism on this
+  VM, so a guessed hostname will never reach your own server.
 - If something has earned $0 after 72 hours of being live, archive it and
   move to the next idea — log why it didn't work before moving on, that's
   the part worth remembering.
