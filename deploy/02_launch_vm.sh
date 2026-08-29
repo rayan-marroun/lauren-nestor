@@ -27,7 +27,7 @@ echo "== Creating the VM (spot instance) =="
 gcloud compute instances create "$VM_NAME" \
   --project="$PROJECT_ID" \
   --zone="$ZONE" \
-  --machine-type=c2-standard-8 \
+  --machine-type=n2-standard-8 \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud \
   --boot-disk-size=100GB \
