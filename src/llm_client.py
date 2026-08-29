@@ -13,13 +13,23 @@ class LLMRouter:
 
     def __init__(self):
         groq_key = os.environ.get("GROQ_API_KEY", "").strip()
-        self._groq_client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=groq_key) if groq_key else None
+        # Groq is normally fast -- a hang past ~30s means something's
+        # actually wrong (bad key, network issue), so fail fast and fall
+        # through rather than block the whole loop waiting on it.
+        self._groq_client = (
+            OpenAI(base_url="https://api.groq.com/openai/v1", api_key=groq_key, timeout=30.0, max_retries=1)
+            if groq_key else None
+        )
         self._groq_primary = os.environ.get("GROQ_MODEL_PRIMARY", "openai/gpt-oss-120b")
         self._groq_fallback = os.environ.get("GROQ_MODEL_FALLBACK", "openai/gpt-oss-20b")
 
+        # Local CPU inference is legitimately slow -- generous timeout since
+        # this is the last resort and bailing early would leave her stuck.
         self._ollama_client = OpenAI(
             base_url=os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
             api_key="ollama",
+            timeout=180.0,
+            max_retries=1,
         )
         self._ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5:14b")
 
