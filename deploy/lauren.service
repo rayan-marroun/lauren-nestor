@@ -1,0 +1,16 @@
+[Unit]
+Description=Lauren Nestor agent loop
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lauren/src
+EnvironmentFile=/opt/lauren/.env
+ExecStart=/opt/lauren/venv/bin/python /opt/lauren/src/agent_loop.py
+Restart=on-failure
+RestartSec=15
+User=lauren
+
+[Install]
+WantedBy=multi-user.target
