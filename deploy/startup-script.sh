@@ -5,7 +5,7 @@
 set -euo pipefail
 
 sudo apt-get update
-sudo apt-get install -y python3-venv python3-pip git
+sudo apt-get install -y python3-venv python3-pip python-is-python3 git
 
 # --- Ollama ---
 curl -fsSL https://ollama.com/install.sh | sh
