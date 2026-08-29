@@ -28,7 +28,8 @@ gcloud services enable \
   pubsub.googleapis.com \
   artifactregistry.googleapis.com \
   iam.googleapis.com \
-  iap.googleapis.com
+  iap.googleapis.com \
+  eventarc.googleapis.com
 
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
