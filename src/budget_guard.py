@@ -9,6 +9,8 @@ mid-thought when the hard stop hits.
 import os
 import time
 
+STARTED_AT_PATH = "/opt/lauren/started_at.txt"
+
 
 class BudgetExceeded(Exception):
     pass
@@ -19,7 +21,19 @@ class BudgetGuard:
         self.cap_eur = float(os.environ.get("BUDGET_EUR_CAP", "235"))
         self.hourly_eur = float(os.environ.get("HOURLY_COST_ESTIMATE_EUR", "0.35"))
         self.soft_fraction = float(os.environ.get("BUDGET_SOFT_STOP_FRACTION", "0.8"))
-        self.started_at = time.time()
+        self.started_at = self._load_or_init_started_at()
+
+    def _load_or_init_started_at(self) -> float:
+        # Persisted so a crash-and-restart doesn't silently reset spend
+        # tracking to zero -- the VM (and its cost) has been running the
+        # whole time regardless of whether this process stayed up.
+        if os.path.exists(STARTED_AT_PATH):
+            with open(STARTED_AT_PATH, "r", encoding="utf-8") as f:
+                return float(f.read().strip())
+        now = time.time()
+        with open(STARTED_AT_PATH, "w", encoding="utf-8") as f:
+            f.write(str(now))
+        return now
 
     def elapsed_hours(self) -> float:
         return (time.time() - self.started_at) / 3600.0

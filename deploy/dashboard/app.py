@@ -60,52 +60,152 @@ HTML_PAGE = """<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lauren Nestor</title>
 <style>
-  :root { color-scheme: dark; }
-  body { background:#0b0d10; color:#e6e6e6; font-family:-apple-system,Segoe UI,sans-serif; margin:0; }
-  header { position:sticky; top:0; background:#14171c; padding:14px 20px; border-bottom:1px solid #262b33;
-           display:flex; justify-content:space-between; align-items:center; }
-  header h1 { font-size:16px; margin:0; font-weight:600; }
-  header .stat { font-size:13px; color:#9aa4b2; }
-  header .stat b { color:#e6e6e6; }
-  #feed { max-width:820px; margin:0 auto; padding:20px; }
-  .entry { margin-bottom:14px; padding:12px 16px; border-radius:10px; white-space:pre-wrap; word-break:break-word; font-size:14px; line-height:1.45; }
-  .lauren { background:#161b22; border-left:3px solid #6ea8fe; }
-  .tool_call { background:#141a14; border-left:3px solid #7ee787; font-family:ui-monospace,monospace; font-size:12.5px; color:#a6d9ab; }
-  .tool_result { background:#141414; border-left:3px solid #d29922; font-family:ui-monospace,monospace; font-size:12.5px; color:#c9b285; max-height:220px; overflow-y:auto; }
-  .system { background:#1c1420; border-left:3px solid #d2a8ff; color:#c9a6e6; font-size:13px; }
-  .ts { display:block; font-size:11px; color:#666; margin-bottom:4px; }
-  .badge { display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:.04em; padding:1px 6px;
-           border-radius:4px; margin-right:6px; background:#262b33; color:#9aa4b2; }
+  :root {
+    color-scheme: dark;
+    --bg: #0a0b0d;
+    --surface: #111318;
+    --surface-2: #16191f;
+    --border: #22262e;
+    --text: #e8e9ec;
+    --text-dim: #8b909b;
+    --text-faint: #5a5f6a;
+    --accent: #5fa8ff;
+    --accent-dim: #5fa8ff33;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); margin: 0; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent-dim);
+    animation: pulse 2s ease-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .brand .dot { animation: none; } }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 var(--accent-dim); }
+    70%  { box-shadow: 0 0 0 6px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .brand h1 { font-size: 14px; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+
+  .budget { text-align: right; }
+  .budget .figures { font-family: var(--mono); font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .budget .figures .dim { color: var(--text-dim); }
+  .budget .bar { width: 140px; height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .budget .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.6s ease; width: 0%; }
+
+  #feed { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  .entry { margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+  .entry-head {
+    display: flex; align-items: baseline; gap: 8px; padding: 10px 14px 0;
+  }
+  .entry-body {
+    padding: 6px 14px 12px; white-space: pre-wrap; word-break: break-word;
+    font-size: 13.5px; line-height: 1.55;
+  }
+  .kind { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ts { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+
+  .lauren { background: var(--surface); }
+  .lauren .kind { color: var(--accent); }
+  .lauren .entry-body { color: var(--text); }
+
+  .tool_call { background: var(--surface); }
+  .tool_call .kind { color: #7fd99a; }
+  .tool_call .entry-body { font-family: var(--mono); font-size: 12px; color: #a7d9b4; }
+
+  .tool_result { background: var(--surface); }
+  .tool_result .kind { color: #d2a15a; }
+  .tool_result .entry-body { font-family: var(--mono); font-size: 12px; color: #b9ac96; }
+  .tool_result .entry-body.collapsed { max-height: 130px; overflow: hidden; position: relative; }
+  .tool_result .expand {
+    display: block; font-family: var(--sans); font-size: 11.5px; color: var(--text-dim);
+    background: var(--surface-2); border: none; border-top: 1px solid var(--border);
+    width: 100%; padding: 7px; cursor: pointer; text-align: center;
+  }
+  .tool_result .expand:hover { color: var(--text); }
+
+  .system { background: transparent; border-style: dashed; }
+  .system .kind { color: var(--text-dim); }
+  .system .entry-body { color: var(--text-dim); font-size: 12.5px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Lauren Nestor</h1>
-  <div class="stat" id="stat">connecting...</div>
+  <div class="brand"><span class="dot"></span><h1>Lauren Nestor</h1></div>
+  <div class="budget">
+    <div class="figures" id="figures">connecting<span class="dim">...</span></div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+  </div>
 </header>
 <div id="feed"></div>
 <script>
 let since = 0;
 const feed = document.getElementById('feed');
-const stat = document.getElementById('stat');
+const figures = document.getElementById('figures');
+const barFill = document.getElementById('barFill');
+const KIND_LABEL = {lauren: 'Lauren', tool_call: 'Tool call', tool_result: 'Tool result', system: 'System'};
+const COLLAPSE_THRESHOLD = 600;
 
 function render(entry) {
-  const div = document.createElement('div');
-  div.className = 'entry ' + entry.kind;
-  const badge = {lauren:'Lauren', tool_call:'Tool call', tool_result:'Tool result', system:'System'}[entry.kind] || entry.kind;
-  div.innerHTML = '<span class="ts"><span class="badge">' + badge + '</span>' + entry.ts + '</span>' +
-                  document.createTextNode(entry.text).textContent;
-  feed.appendChild(div);
+  const wrap = document.createElement('div');
+  wrap.className = 'entry ' + entry.kind;
+
+  const head = document.createElement('div');
+  head.className = 'entry-head';
+  const kind = document.createElement('span');
+  kind.className = 'kind';
+  kind.textContent = KIND_LABEL[entry.kind] || entry.kind;
+  const ts = document.createElement('span');
+  ts.className = 'ts';
+  ts.textContent = entry.ts;
+  head.appendChild(kind);
+  head.appendChild(ts);
+
+  const body = document.createElement('div');
+  body.className = 'entry-body';
+  body.textContent = entry.text;
+
+  wrap.appendChild(head);
+  wrap.appendChild(body);
+
+  if (entry.kind === 'tool_result' && entry.text.length > COLLAPSE_THRESHOLD) {
+    body.classList.add('collapsed');
+    const btn = document.createElement('button');
+    btn.className = 'expand';
+    btn.textContent = 'Show full output';
+    btn.onclick = () => {
+      const collapsed = body.classList.toggle('collapsed');
+      btn.textContent = collapsed ? 'Show full output' : 'Collapse';
+    };
+    wrap.appendChild(btn);
+  }
+
+  feed.appendChild(wrap);
 }
 
 async function pollLog() {
   try {
     const res = await fetch('/api/log?since=' + since);
     const data = await res.json();
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 200;
     for (const e of data.entries) render(e);
-    if (data.entries.length) window.scrollTo(0, document.body.scrollHeight);
+    if (data.entries.length && nearBottom) window.scrollTo(0, document.body.scrollHeight);
     since = data.total;
   } catch (e) {}
 }
@@ -115,8 +215,16 @@ async function pollStatus() {
     const res = await fetch('/api/status');
     const s = await res.json();
     if (s.spent_eur !== undefined) {
-      stat.innerHTML = '<b>&euro;' + s.spent_eur.toFixed(2) + '</b> / &euro;' + s.cap_eur.toFixed(0) +
-                        ' &middot; <b>' + s.elapsed_hours.toFixed(1) + 'h</b> runtime';
+      figures.innerHTML = '';
+      const spent = document.createElement('span');
+      spent.textContent = '€' + s.spent_eur.toFixed(2) + ' / €' + s.cap_eur.toFixed(0);
+      const sep = document.createElement('span');
+      sep.className = 'dim';
+      sep.textContent = '  ' + s.elapsed_hours.toFixed(1) + 'h';
+      figures.appendChild(spent);
+      figures.appendChild(sep);
+      const pct = Math.min(100, (s.spent_eur / s.cap_eur) * 100);
+      barFill.style.width = pct + '%';
     }
   } catch (e) {}
 }

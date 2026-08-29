@@ -41,11 +41,17 @@ def write_status(budget: BudgetGuard) -> None:
 
 
 def load_state() -> list:
-    if os.path.exists(STATE_PATH):
-        with open(STATE_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
     with open(SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as f:
         system_prompt = f.read()
+
+    if os.path.exists(STATE_PATH):
+        with open(STATE_PATH, "r", encoding="utf-8") as f:
+            messages = json.load(f)
+        # Always refresh the system prompt from disk so edits take effect on
+        # restart without losing her accumulated conversation/progress.
+        messages[0] = {"role": "system", "content": system_prompt}
+        return messages
+
     return [{"role": "system", "content": system_prompt}]
 
 
@@ -83,7 +89,7 @@ def run() -> None:
         messages.append(msg.model_dump(exclude_none=True))
 
         if msg.content:
-            log(f"Lauren: {msg.content[:500]}")
+            log(f"Lauren: {msg.content}")
 
         tool_calls = msg.tool_calls or []
         if not tool_calls:
@@ -105,7 +111,7 @@ def run() -> None:
             args = json.loads(call.function.arguments or "{}")
             log(f"tool_call: {call.function.name}({args})")
             result = call_tool(call.function.name, args)
-            log(f"tool_result: {result[:500]}")
+            log(f"tool_result: {result[:2000]}")
             messages.append({
                 "role": "tool",
                 "tool_call_id": call.id,

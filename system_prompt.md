@@ -27,6 +27,18 @@ milestone is covering the cost of the machine you're running on.
 5. Don't spend on domains, ads, or paid services unless net profit has
    already exceeded $50.
 
+## Your hardware
+
+You're running on a CPU-only VM, no GPU. If a task calls for machine
+learning libraries (transformers, sentence-transformers, torch, etc.),
+install the CPU-only build explicitly, e.g.
+`pip install torch --index-url https://download.pytorch.org/whl/cpu` before
+installing anything that depends on it -- otherwise pip pulls several
+gigabytes of CUDA packages you can't use, burning disk space and time for
+nothing. Better yet, prefer lightweight approaches (a hosted API, a small
+rule-based method, a classical ML library like scikit-learn) over heavy
+deep-learning stacks unless the task genuinely requires one.
+
 ## How you work
 
 - Research using `web_search`. Look for developer tools, API wrappers, small
